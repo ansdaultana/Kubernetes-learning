@@ -311,13 +311,129 @@ minikube service mongo-express-service
 
 ---
 
-## ✅ Summary
+## 🧩 Kubernetes Namespace
 
-- **Kubernetes** manages containerized apps automatically.  
-- **Pods** are smallest deployable units.  
-- **Deployments** ensure Pods stay healthy.  
-- **Services** give stable access to Pods.  
-- **Minikube** lets you test locally.  
-- **kubectl** is your main control tool.  
+### 📘 What is a Namespace?
+- A **Namespace** is a way to organize and isolate resources within a Kubernetes cluster.
+- Think of it as a **folder** inside the cluster — each namespace can contain its own pods, services, and configurations.
 
-Keep learning, keep automating! 🚀
+---
+
+### 🧱 Default Namespaces
+- **default** → for resources without a specified namespace.  
+- **kube-system** → for system components (like kube-dns).  
+- **kube-public** → readable by all users (even unauthenticated).  
+- **kube-node-lease** → stores node heartbeat leases.
+
+A namespace is a “folder” — Ingress can only see Services inside the same folder.
+
+
+## 🗂️ Namespace (MongoDB Example)
+
+Namespaces help **organize and isolate** resources like dev, staging, and prod.
+
+### Example
+
+**Create Namespace**
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+  namespace: dev
+spec:
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+  namespace: dev
+---
+
+### ⚙️ Basic Commands
+```bash
+# List all namespaces
+kubectl get namespaces
+
+# Create a new namespace
+kubectl create namespace dev
+
+# Apply manifest to specific namespace
+kubectl apply -f app.yaml -n dev
+
+# Switch default namespace (using context)
+kubectl config set-context --current --namespace=dev
+
+
+### 🧾 Add Namespace in YAML
+Add this under `metadata` in any resource:
+```yaml
+metadata:
+  name: my-app
+  namespace: mongodb
+
+
+# 🧭 Kubernetes Ingress Notes
+
+## 🌐 What is Ingress?
+Ingress is a Kubernetes object that manages **external HTTP/HTTPS access** to services inside a cluster.  
+It acts as a **smart router (reverse proxy)** — routing requests based on hostnames or paths.
+
+---
+
+## ⚙️ How It Works
+1. **Ingress Controller**  
+   - A pod running Nginx (or other controller) that listens on ports 80/443.
+   - Must be installed first:  
+     ```bash
+     minikube addons enable ingress
+     ```
+2. **Ingress Resource (YAML)**  
+   - Defines routing rules.
+   - Example:
+     ```yaml
+     apiVersion: networking.k8s.io/v1
+     kind: Ingress
+     metadata:
+       name: node-app-ingress
+     spec:
+       rules:
+         - host: nginx.local
+           http:
+             paths:
+               - path: /
+                 pathType: Prefix
+                 backend:
+                   service:
+                     name: node-service
+                     port:
+                       number: 3000
+     ```
+
+---
+
+## 🧩 How Ingress Works Internally
+1. Browser → DNS → `192.168.49.2` (Minikube IP)  
+2. Ingress Controller listens on port 80/443.  
+3. Based on the host/path rule, it routes traffic to the correct **Service → Pod**.
+
+---
+
+## 🧱 Common Setup Steps
+1. Enable Ingress in Minikube:
+   ```bash
+   minikube addons enable ingress
+
+kubectl get ingress
+kubectl describe ingress
+kubectl get pods -n kube-system | grep ingress
+minikube ip
+
+**Browser → nginx.local → Ingress Controller → Service → Pod**
+
