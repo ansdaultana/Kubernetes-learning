@@ -377,6 +377,7 @@ Add this under `metadata` in any resource:
 metadata:
   name: my-app
   namespace: mongodb
+```
 
 
 # 🧭 Kubernetes Ingress Notes
@@ -437,3 +438,84 @@ minikube ip
 
 **Browser → nginx.local → Ingress Controller → Service → Pod**
 
+
+# 🌐 Kubernetes Load Balancer & Domain Routing
+
+## 🚪 Load Balancer (in Kubernetes)
+- A **LoadBalancer** is a Kubernetes **Service type** that exposes your cluster to the **outside world**.
+- It gets a **public IP address** (from your cloud provider or via Minikube tunnel).
+- All external traffic first enters through this LoadBalancer, then goes to your **Ingress Controller**.
+- The LoadBalancer can distribute traffic among multiple Ingress Controller pods for reliability.
+
+### 🔁 Traffic Flow
+Browser → Domain (DNS)
+↓
+LoadBalancer (Public IP)
+↓
+Ingress Controller
+↓
+Ingress Rules (host/path)
+↓
+Service → Pods
+
+## 🌍 Domain and Ingress Relationship
+- Your **domain** (e.g. `myapp.example.com`) only needs to point to the **external IP** of the **Ingress Controller’s LoadBalancer**.
+- The **Ingress Controller** reads the Ingress YAML rules and decides:
+  - Which **namespace**
+  - Which **Service**
+  - Which **path**  
+  the traffic should go to.
+
+## 🧠 Key Points
+- **Ingress** = Rules for routing (YAML config).
+- **Ingress Controller** = Reverse proxy that enforces those rules.
+- **LoadBalancer** = Entry point from the internet to the cluster.
+- **Domain (DNS)** = Maps your hostname to the LoadBalancer’s public IP.
+
+
+# 📦 Helm — Kubernetes Package Manager
+
+## 🧩 What is Helm
+- **Helm** is the **package manager for Kubernetes**, similar to `apt`, `npm`, or `pip`.
+- It helps you **package, configure, and deploy** applications easily.
+- A Helm package is called a **Chart** — a reusable template for deploying an app.
+
+---
+
+## ⚙️ What Helm Does
+- Deploys and manages complex Kubernetes apps using a single command.
+- Combines multiple YAML files into one **Chart**.
+- Supports **versioning**, **upgrades**, and **rollbacks**.
+- Allows you to customize deployments via a single `values.yaml` file.
+
+---
+
+## 🌟 Key Features
+| Feature | Description |
+|----------|-------------|
+| **Charts** | Pre-packaged templates for apps (e.g., Nginx, MongoDB, Grafana) |
+| **Templating** | Parameterized YAMLs with reusable logic |
+| **Releases** | Versioned deployments that can be upgraded or rolled back |
+| **Repositories** | Online libraries of charts (like DockerHub for Helm) |
+| **Values File** | Custom configuration without editing manifests |
+
+---
+
+## 💡 Why Helm is Used
+| Purpose | Benefit |
+|----------|----------|
+| 🧠 Simplifies deployments | One command can create all related resources |
+| 🔁 Consistency | Same chart used across dev, staging, and prod |
+| ⚙️ Easy customization | Override defaults in `values.yaml` |
+| 🕒 Version control | Rollback to older releases easily |
+| 📦 Reusability | Share and reuse common charts across teams |
+
+---
+
+```
+mychart/
+ ├── Chart.yaml      # Metadata (name, version, description)
+ ├── values.yaml     # Default configuration values
+ ├── templates/      # Kubernetes manifest templates
+ └── charts/         # Dependencies (other charts)
+```
