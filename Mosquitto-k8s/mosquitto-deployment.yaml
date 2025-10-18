@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mosquitto
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+    spec:
+      containers:
+      - name: mosquitto
+        image: eclipse-mosquitto:2.0
+        ports:
+        - containerPort: 1883
+        volumeMounts:
+          - name: config-volume
+            mountPath: /mosquitto/config/mosquitto.conf
+            subPath: mosquitto.conf
+          - name: secret-volume
+            mountPath: /mosquitto/secret/passwd
+            subPath: passwd
+          - name: data-volume
+            mountPath: /mosquitto/data
+      volumes:
+        - name: config-volume
+          configMap:
+            name: mosquitto-config
+        - name: secret-volume
+          secret:
+            secretName: mosquitto-secret
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: mosquitto-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto
+spec:
+  selector:
+    app: mosquitto
+  ports:
+    - port: 1883
+      targetPort: 1883
+      protocol: TCP
+  type: ClusterIP
