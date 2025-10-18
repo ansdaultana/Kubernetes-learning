@@ -466,11 +466,61 @@ Service → Pods
   - Which **path**  
   the traffic should go to.
 
-## 🧠 Key Points
+
+# 🌐 Node App and MongoDB — Service Communication
+
+## 🧩 Overview
+This setup shows how a Node.js application connects to MongoDB inside Kubernetes using internal and external services.
+
+---
+# 🧩 Ingress, Controller & Load Balancer Overview
+
+## 1. Roles Overview
+
+![alt text](./pics/image.png)
+
+---
+
+## 2. How They Work Together
+
+![alt text](./pics/image-1.png)
+
+
+## 🔹 Minikube (Minikube has no real “cloud” load balancer.)
+
+## 🔹 Internal Communication
+- The **Node.js app** connects to **MongoDB** through an internal **ClusterIP Service**.
+- Example connection string:
+  ```env
+  MONGO_URL=mongodb://admin:pass@mongodb-service:27017/user-accounts?authSource=admin
+> 🧩 **App–Service–Database Flow (Node.js + MongoDB)**  
+>
+> 🔹 **Internal Communication**  
+> The Node.js app connects to MongoDB using an internal **ClusterIP** service.  
+>
+> **Example:**  
+> ```env
+> MONGO_URL=mongodb://admin:pass@mongodb-service:27017/user-accounts?authSource=admin
+> ```
+>
+> `mongodb-service` is only accessible **inside the cluster** and routes to the MongoDB pods.  
+>
+> 🔹 **External Communication**  
+> The Node.js app is exposed to the outside world using a **LoadBalancer** or **Ingress**.  
+> This allows users to access the app via a browser or external network.  
+>
+
+> ```
+>
+> ✅ **Key Points**  
+> - **ClusterIP** → Used for internal communication (Node app → MongoDB).  
+> - **Service names** act as DNS inside the cluster to connect components easily.  
+
 - **Ingress** = Rules for routing (YAML config).
 - **Ingress Controller** = Reverse proxy that enforces those rules.
-- **LoadBalancer** = Entry point from the internet to the cluster.
+- **LoadBalancer** = Entry point from the internet to the cluster. Used to expose the Node.js app externally.  
 - **Domain (DNS)** = Maps your hostname to the LoadBalancer’s public IP.
+
 
 
 # 📦 Helm — Kubernetes Package Manager
