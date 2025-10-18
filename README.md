@@ -569,3 +569,62 @@ mychart/
  ├── templates/      # Kubernetes manifest templates
  └── charts/         # Dependencies (other charts)
 ```
+
+# Volumes
+
+
+### 🧱 Persistent Volume (PV)
+- Represents actual storage (like disk, NFS, etc.) in the cluster.  
+- Created by **cluster admin**.  
+- Has attributes like size, access mode, reclaim policy.
+
+
+### 📦 Persistent Volume Claim (PVC)
+
+- Created by developer to request storage from available PVs.
+
+- Once bound, the Pod can use that storage.
+---
+
+# 🧩 Mosquitto on Kubernetes — Persistent and Secure Setup
+
+This project deploys the **Eclipse Mosquitto** MQTT broker on **Minikube** using:
+- **ConfigMap** for configuration file  
+- **Secret** for credentials  
+- **Persistent Volume (PV) / Persistent Volume Claim (PVC)** for data persistence  
+
+---
+
+## 📘 1. Concept Summary
+
+### 🔹 Why Volumes
+Containers are **ephemeral** — data is lost when a Pod restarts.  
+Volumes store data **outside container lifecycle** → making it persistent.
+
+### 🔹 Volume Types Used
+
+| Type | Description | Example Use |
+|------|--------------|--------------|
+| **ConfigMap** | Non-sensitive configuration | `mosquitto.conf` |
+| **Secret** | Sensitive data (passwords, keys) | `passwd` file |
+| **PersistentVolume (PV)** | Actual storage on the node | Persistent MQTT data |
+| **PersistentVolumeClaim (PVC)** | Request to use PV | Used by Pod |
+
+
+
+
+## 🧱 2. Why 3 Volumes in Mosquitto
+
+| Volume | Source | Mount Path | Purpose |
+|--------|---------|------------|----------|
+| `config-volume` | ConfigMap | `/mosquitto/config/mosquitto.conf` | Main configuration file |
+| `secret-volume` | Secret | `/mosquitto/secret/passwd` | Credentials file |
+| `data-volume` | PVC | `/mosquitto/data` | Persistent broker data (messages, logs, retained topics) |
+
+➡ Each one serves a unique function:
+- **ConfigMap** → Change configs easily without touching code  
+- **Secret** → Store passwords securely  
+- **PVC** → Keep runtime data safe between restarts  
+
+---
+
