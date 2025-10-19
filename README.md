@@ -658,3 +658,69 @@ Volumes store data **outside the container lifecycle**, keeping it persistent.
 - **StorageClass + PVC** → Keep runtime data safe and persistent between restarts  
 
 ---
+# 🧩 Kubernetes StatefulSet and Storage Notes
+
+---
+
+## 1️⃣ StatefulSet
+
+- **StatefulSet** is a Kubernetes workload for **stateful applications**.  
+- Features:
+  - Each pod gets a **stable, unique name** (`pod-0`, `pod-1`, …)  
+  - Pods are **ordered** and **gracefully managed** during scaling or updates  
+  - **PersistentVolumeClaims (PVCs) can be auto-created per pod** using `volumeClaimTemplates`  
+- **Use cases:** Databases, message brokers, or any service requiring **persistent identity and storage**.
+
+---
+
+## 2️⃣ Persistent Volumes (PV) and Auto-Assignment
+
+- **PV:** Represents actual storage in the cluster (disk, hostPath, cloud storage, etc.)  
+- **PVC:** Pod’s request to use PV  
+- In StatefulSets:
+  - **PVCs can be auto-created** per pod  
+  - PVs are **automatically assigned** to PVCs **via a StorageClass**  
+- This allows pods to have **persistent storage** even after restarts.
+
+---
+
+## 3️⃣ StorageClass
+
+- **StorageClass** defines **how Kubernetes dynamically provisions PVs** when a PVC is created.  
+- Key fields:
+  - **provisioner:** storage backend (`kubernetes.io/minikube-hostpath` for Minikube)  
+  - **reclaimPolicy:** `Delete` or `Retain` when PVC is deleted  
+  - **volumeBindingMode:** `WaitForFirstConsumer` ensures PV is created **only when a pod requests it**
+- **Purpose:**  
+  - Avoids manual PV creation  
+  - Supports **dynamic provisioning**: PVC → StorageClass → PV
+
+---
+
+## 4️⃣ Important Note for Minikube
+
+- Minikube **cannot dynamically create hostPath PVs** like cloud providers  
+- **Manual PV + PVC creation is recommended** for testing locally  
+- Ensures pods start without **Pending PVCs** and storage is correctly bound
+
+---
+
+## 5️⃣ Key Points
+
+- StatefulSets provide **stable pod identity and persistent storage**  
+- PVCs are **auto-assigned PVs via StorageClass** in normal clusters  
+- On Minikube, manual PV is safer for testing  
+- Use **StatefulSets** for databases, brokers, or any stateful service
+
+## 6️⃣ Headless Service
+
+- **What is a Headless Service?**
+  - A Kubernetes Service **without a cluster IP** (`clusterIP: None`)  
+  - Does **not load balance** traffic; instead, it provides **direct DNS entries** for each pod  
+
+- **Why it is used with StatefulSets**
+  - StatefulSet pods have **stable, unique names** (`pod-0`, `pod-1`, …)  
+  - A headless service allows:
+    - **Direct access to individual pods** by their DNS names  
+    - Stateful applications (databases, message brokers) to **discover each other**  
+    - Pods to communicate with **their specific peer pods**  

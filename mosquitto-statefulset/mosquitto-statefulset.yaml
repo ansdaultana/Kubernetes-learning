@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mosquitto
+spec:
+  serviceName: "mosquitto"   # Headless service name
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mosquitto
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+    spec:
+      containers:
+      - name: mosquitto
+        image: eclipse-mosquitto:2
+        ports:
+          - containerPort: 1883
+          - containerPort: 9001
+        volumeMounts:
+          - name: config-volume
+            mountPath: /mosquitto/config/mosquitto.conf
+            subPath: mosquitto.conf
+            readOnly: true
+          - name: secret-volume
+            mountPath: /mosquitto/secret/passwd
+            subPath: passwd
+            readOnly: true
+          - name: data
+            mountPath: /mosquitto/data
+      volumes:
+        - name: config-volume
+          configMap:
+            name: mosquitto-config
+        - name: secret-volume
+          secret:
+            secretName: mosquitto-secret
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: mosquitto-storage-class
+      resources:
+        requests:
+          storage: 200Mi
