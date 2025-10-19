@@ -9,7 +9,7 @@ spec:
     - ReadWriteOnce
   hostPath:
     path: /data/mosquitto
-
+  storageClassName: mosquitto-storage-class   # 🧠 Link to the StorageClass
 
     
 ---
@@ -23,3 +23,4 @@ spec:
   resources:
     requests:
       storage: 200Mi
+  storageClassName: mosquitto-storage-class    # 🧠 Must match

@@ -585,12 +585,43 @@ mychart/
 
 - Once bound, the Pod can use that storage.
 ---
+# 📦 Kubernetes StorageClass
+
+## 🔹 What is a StorageClass?
+A **StorageClass** defines **how Kubernetes automatically creates PersistentVolumes (PVs)** when a PersistentVolumeClaim (PVC) is made.  
+It acts like a **template or rule** for provisioning storage dynamically.
+
+---
+
+## 🔹 Why We Need It
+Without a StorageClass:
+- You must manually create a PV before a PVC can bind to it.
+
+With a StorageClass:
+- Kubernetes automatically **creates a PV** when someone creates a PVC.  
+  → This process is called **dynamic provisioning**.
+
+---
+
+## 🔹 Key Features
+- **Provisioner:** defines the storage backend or driver.  
+  Examples:
+  - `kubernetes.io/minikube-hostpath` → for Minikube
+  - `kubernetes.io/aws-ebs` → for AWS
+  - `kubernetes.io/gce-pd` → for Google Cloud
+
+- **reclaimPolicy:** defines what happens when a PVC is deleted:
+  - `Delete` → removes the PV and its data
+  - `Retain` → keeps the data for manual cleanup
+
+---
 
 # 🧩 Mosquitto on Kubernetes — Persistent and Secure Setup
 
 This project deploys the **Eclipse Mosquitto** MQTT broker on **Minikube** using:
 - **ConfigMap** for configuration file  
 - **Secret** for credentials  
+- **StorageClass** to define local storage behavior  
 - **Persistent Volume (PV) / Persistent Volume Claim (PVC)** for data persistence  
 
 ---
@@ -599,19 +630,19 @@ This project deploys the **Eclipse Mosquitto** MQTT broker on **Minikube** using
 
 ### 🔹 Why Volumes
 Containers are **ephemeral** — data is lost when a Pod restarts.  
-Volumes store data **outside container lifecycle** → making it persistent.
+Volumes store data **outside the container lifecycle**, keeping it persistent.
 
 ### 🔹 Volume Types Used
 
 | Type | Description | Example Use |
-|------|--------------|--------------|
+|------|--------------|-------------|
 | **ConfigMap** | Non-sensitive configuration | `mosquitto.conf` |
 | **Secret** | Sensitive data (passwords, keys) | `passwd` file |
+| **StorageClass** | Defines how storage is provisioned and bound | `mosquitto-storage-class` |
 | **PersistentVolume (PV)** | Actual storage on the node | Persistent MQTT data |
-| **PersistentVolumeClaim (PVC)** | Request to use PV | Used by Pod |
+| **PersistentVolumeClaim (PVC)** | Requests PV storage | Used by Pod |
 
-
-
+---
 
 ## 🧱 2. Why 3 Volumes in Mosquitto
 
@@ -624,7 +655,6 @@ Volumes store data **outside container lifecycle** → making it persistent.
 ➡ Each one serves a unique function:
 - **ConfigMap** → Change configs easily without touching code  
 - **Secret** → Store passwords securely  
-- **PVC** → Keep runtime data safe between restarts  
+- **StorageClass + PVC** → Keep runtime data safe and persistent between restarts  
 
 ---
-
